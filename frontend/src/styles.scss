@@ -1,6 +1,16 @@
+@use '@angular/material' as mat;
+
 :root {
   color-scheme: light;
   --app-muted: #64748b;
+
+  @include mat.theme(
+    (
+      color: mat.$violet-palette,
+      typography: Roboto,
+      density: 0,
+    )
+  );
 }
 
 html,

@@ -1,6 +1,4 @@
-.gradle
 .idea
-build
+target
 *.iml
 .git
-HELP.md

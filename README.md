@@ -22,7 +22,7 @@ Para derrubar: `docker compose down`.
 
 ## Rodando cada parte isoladamente (sem Docker)
 
-Veja `backend/README.md` (`./gradlew bootRun`, `./gradlew test`) e `frontend/README.md` (`npm start`, `npm test`).
+Veja `backend/README.md` (`./mvnw spring-boot:run`, `./mvnw test`) e `frontend/README.md` (`npm start`, `npm test`).
 
 ## Arquitetura
 

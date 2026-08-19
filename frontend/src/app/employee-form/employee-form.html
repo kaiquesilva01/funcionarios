@@ -1,0 +1,61 @@
+<mat-card class="form-panel">
+  <mat-card-header>
+    <mat-card-title>{{ editingEmployee() ? 'Editar funcionário' : 'Novo funcionário' }}</mat-card-title>
+    <mat-card-subtitle>Preencha os dados e salve no backend Spring Boot.</mat-card-subtitle>
+  </mat-card-header>
+
+  <mat-card-content>
+    <form class="employee-form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <mat-form-field appearance="outline">
+        <mat-label>Nome</mat-label>
+        <input matInput formControlName="name" placeholder="Maria Silva" />
+        @if (form.controls.name.invalid && form.controls.name.touched) {
+          <mat-error>Informe um nome com pelo menos 3 caracteres.</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>E-mail</mat-label>
+        <input matInput type="email" formControlName="email" placeholder="maria.silva@itau.com.br" />
+        @if (form.controls.email.invalid && form.controls.email.touched) {
+          <mat-error>Informe um e-mail válido.</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Cargo</mat-label>
+        <input matInput formControlName="role" placeholder="Analista" />
+        @if (form.controls.role.invalid && form.controls.role.touched) {
+          <mat-error>Informe o cargo.</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Salário</mat-label>
+        <input matInput type="number" min="0" step="0.01" formControlName="salary" placeholder="5000" />
+        @if (form.controls.salary.invalid && form.controls.salary.touched) {
+          <mat-error>Informe um salário válido.</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Data de admissão</mat-label>
+        <input matInput type="date" formControlName="hireDate" />
+        @if (form.controls.hireDate.invalid && form.controls.hireDate.touched) {
+          <mat-error>Informe a data de admissão.</mat-error>
+        }
+      </mat-form-field>
+
+      <div class="form-actions">
+        <button mat-flat-button color="primary" type="submit" [disabled]="saving()">
+          <mat-icon>save</mat-icon>
+          {{ editingEmployee() ? 'Atualizar funcionário' : 'Criar funcionário' }}
+        </button>
+
+        @if (editingEmployee()) {
+          <button mat-button type="button" (click)="onCancel()">Cancelar edição</button>
+        }
+      </div>
+    </form>
+  </mat-card-content>
+</mat-card>

@@ -1,0 +1,39 @@
+<main class="page-shell">
+  <header class="hero">
+    <p class="eyebrow">Funcionários</p>
+    <h1>Gerencie funcionários com Angular Material e Spring Boot</h1>
+    <p class="hero-copy">Crie, edite e remova funcionários. A tabela abaixo é alimentada pela API funcionarios-api.</p>
+  </header>
+
+  <section class="content-grid">
+    <app-employee-form
+      [editingEmployee]="editingEmployee()"
+      [saving]="saving()"
+      (save)="onSave($event)"
+      (cancel)="onCancel()"
+    />
+
+    <mat-card class="employees-panel">
+      <mat-card-header>
+        <mat-card-title>Funcionários cadastrados</mat-card-title>
+        <mat-card-subtitle>{{ employees().length }} funcionário(s)</mat-card-subtitle>
+      </mat-card-header>
+
+      <mat-card-content>
+        @if (loading()) {
+          <div class="state-box">
+            <mat-progress-spinner diameter="42" mode="indeterminate"></mat-progress-spinner>
+            <p>Carregando funcionários...</p>
+          </div>
+        } @else if (!employees().length) {
+          <div class="state-box empty-state">
+            <p>Nenhum funcionário cadastrado.</p>
+            <p>Adicione o primeiro funcionário usando o formulário ao lado.</p>
+          </div>
+        } @else {
+          <app-employee-list [employees]="employees()" (edit)="onEdit($event)" (remove)="onRemove($event)" />
+        }
+      </mat-card-content>
+    </mat-card>
+  </section>
+</main>

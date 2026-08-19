@@ -4,11 +4,11 @@ API REST para CRUD de funcionários, feita em Spring Boot 4 (Java 21), seguindo 
 
 ## Stack
 
-- Java 21 (toolchain via Gradle)
+- Java 21
 - Spring Boot 4.1.0 (Web MVC, Data JPA, Validation)
 - H2 (banco em memória)
 - JUnit 5, Mockito, AssertJ, ArchUnit
-- Gradle (wrapper incluso) + Jacoco
+- Maven + Jacoco
 
 ## Arquitetura
 
@@ -64,7 +64,7 @@ Validações: nome/cargo/e-mail obrigatórios, e-mail em formato válido e únic
 ## Rodando localmente
 
 ```bash
-./gradlew bootRun
+./mvnw spring-boot:run
 ```
 
 A API sobe em `http://localhost:8080`. Console H2 disponível em `http://localhost:8080/h2-console` (JDBC URL `jdbc:h2:mem:funcionarios`, usuário `sa`, sem senha).
@@ -72,7 +72,7 @@ A API sobe em `http://localhost:8080`. Console H2 disponível em `http://localho
 ## Testes
 
 ```bash
-./gradlew test
+./mvnw test
 ```
 
 Cobertura: testes unitários da camada de aplicação (`EmployeeServiceTest`, com Mockito), testes de fatia web com `@WebMvcTest` (`EmployeeControllerTest`), testes de persistência com `@DataJpaTest` (`JpaEmployeeRepositoryAdapterTest`) e teste de arquitetura com ArchUnit.

@@ -5,6 +5,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { EmployeeCreateConfirmDialog } from './employee-create-confirm-dialog/employee-create-confirm-dialog';
+import { EmployeeRemoveConfirmDialog } from './employee-remove-confirm-dialog/employee-remove-confirm-dialog';
 import { EmployeeForm } from './employee-form/employee-form';
 import { EmployeeList } from './employee-list/employee-list';
 import { Employee, EmployeePayload } from './employee.model';
@@ -90,11 +91,18 @@ export class App implements OnInit {
   }
 
   protected onRemove(employee: Employee): void {
-    const confirmed = window.confirm(`Remover o funcionário "${employee.name}"?`);
-    if (!confirmed) {
-      return;
-    }
+    this.dialog
+      .open(EmployeeRemoveConfirmDialog, { data: employee })
+      .afterClosed()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((confirmed) => {
+        if (confirmed) {
+          this.removeEmployee(employee);
+        }
+      });
+  }
 
+  private removeEmployee(employee: Employee): void {
     this.employeesService
       .remove(employee.id)
       .pipe(takeUntilDestroyed(this.destroyRef))

@@ -1,8 +1,14 @@
 <main class="page-shell">
   <header class="hero">
-    <p class="eyebrow">Funcionários</p>
-    <h1>Gerencie funcionários com Angular Material e Spring Boot</h1>
-    <p class="hero-copy">Crie, edite e remova funcionários. A tabela abaixo é alimentada pela API funcionarios-api.</p>
+    <div class="hero-text">
+      <p class="eyebrow">Livro-razão de pessoal</p>
+      <h1>Gerencie funcionários no livro-razão de pessoal</h1>
+      <p class="hero-copy">Crie, edite e remova registros. Cada linha do livro é sincronizada com a API funcionarios-api.</p>
+    </div>
+    <div class="hero-tally" aria-hidden="true">
+      <span class="hero-tally-value">{{ employees().length.toString().padStart(2, '0') }}</span>
+      <span class="hero-tally-label">registros<br />ativos</span>
+    </div>
   </header>
 
   <section class="content-grid">

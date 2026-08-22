@@ -18,5 +18,5 @@ export class EmployeeList {
   readonly edit = output<Employee>();
   readonly remove = output<Employee>();
 
-  protected readonly displayedColumns = ['name', 'email', 'role', 'salary', 'hireDate', 'actions'];
+  protected readonly displayedColumns = ['index', 'name', 'email', 'role', 'salary', 'hireDate', 'actions'];
 }

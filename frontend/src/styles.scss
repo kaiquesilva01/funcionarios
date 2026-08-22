@@ -1,8 +1,52 @@
 @use '@angular/material' as mat;
 
+// ---------------------------------------------------------------------------
+// Identidade visual "Registro" — um livro-razão de RH.
+//
+// Paleta nomeada (todas em hex nomeado por papel, não por tom genérico):
+//   --ink            #1c2333  texto principal / cabeçalhos — tinta escura sobre papel
+//   --ink-soft       #545e73  texto secundário / legendas
+//   --paper          #eef1f6  fundo da página — papel frio, não creme
+//   --paper-card     #ffffff  superfície dos cartões
+//   --brass          #b8863a  cor de assinatura — carimbo/latão, ação primária
+//   --brass-dark     #8f6423  hover/estados ativos do latão
+//   --brass-soft     #f3e6cf  fundo suave do latão (chips, hover de linha)
+//   --rule           #d9dee7  hairlines / divisores discretos
+//   --ledger-line    #c9902f  regra dupla de cabeçalho da tabela (o "carimbo")
+//   --danger         #a13d3d  ação destrutiva (remover) — tijolo, não vermelho puro
+//
+// Tipografia com papel definido:
+//   Display  -> 'Space Grotesk'  (hero, títulos de cartão) — geométrica, com caráter
+//   Corpo/UI -> 'Inter'          (formulário, botões, texto corrido)
+//   Dados    -> 'JetBrains Mono' (números: salário, datas, índice de linha)
+//
+// Elemento de assinatura: o "índice de razão" — cada linha da tabela ganha um
+// número de registro em mono à esquerda (01, 02, 03…) e o cabeçalho da tabela
+// leva uma regra dupla em latão, como o carimbo de um livro-razão.
+// ---------------------------------------------------------------------------
+
 :root {
   color-scheme: light;
-  --app-muted: #64748b;
+
+  // Paleta
+  --ink: #1c2333;
+  --ink-soft: #545e73;
+  --paper: #eef1f6;
+  --paper-card: #ffffff;
+  --brass: #b8863a;
+  --brass-dark: #8f6423;
+  --brass-soft: #f3e6cf;
+  --rule: #d9dee7;
+  --ledger-line: #c9902f;
+  --danger: #a13d3d;
+
+  // Compat com código existente que referenciava --app-muted
+  --app-muted: var(--ink-soft);
+
+  // Tipografia
+  --font-display: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
 
   @include mat.theme(
     (
@@ -11,6 +55,36 @@
       density: 0,
     )
   );
+
+  // Realinha os tokens de sistema do Material 3 para a identidade "Registro":
+  // latão como cor primária, tinta como superfície de texto, papel frio no fundo.
+  --mat-sys-primary: var(--brass-dark);
+  --mat-sys-on-primary: #ffffff;
+  --mat-sys-primary-container: var(--brass-soft);
+  --mat-sys-on-primary-container: #4a3510;
+
+  --mat-sys-secondary: var(--ink-soft);
+  --mat-sys-on-secondary: #ffffff;
+
+  --mat-sys-error: var(--danger);
+  --mat-sys-on-error: #ffffff;
+  --mat-sys-error-container: #f4e0dc;
+  --mat-sys-on-error-container: #5c2318;
+
+  --mat-sys-surface: var(--paper-card);
+  --mat-sys-on-surface: var(--ink);
+  --mat-sys-on-surface-variant: var(--ink-soft);
+  --mat-sys-surface-container: var(--paper-card);
+  --mat-sys-surface-container-low: var(--paper-card);
+  --mat-sys-surface-container-high: #f5f2ea;
+  --mat-sys-outline: var(--rule);
+  --mat-sys-outline-variant: var(--rule);
+
+  --mat-sys-body-font: var(--font-body);
+  --mat-sys-title-font: var(--font-display);
+  --mat-sys-label-font: var(--font-body);
+  --mat-sys-headline-font: var(--font-display);
+  --mat-sys-display-font: var(--font-display);
 }
 
 html,
@@ -20,8 +94,9 @@ body {
 
 body {
   margin: 0;
-  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background: #f1f5f9;
+  font-family: var(--font-body);
+  color: var(--ink);
+  background: var(--paper);
 }
 
 * {
@@ -32,4 +107,15 @@ button,
 input,
 textarea {
   font: inherit;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }

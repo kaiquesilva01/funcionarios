@@ -1,3 +1,78 @@
 .employee-table {
   width: 100%;
+  background: transparent;
+
+  // O "carimbo" do livro-razão: regra dupla em latão sob o cabeçalho.
+  ::ng-deep .mat-mdc-header-row {
+    border-bottom: 3px double var(--ledger-line);
+  }
+
+  ::ng-deep .mat-mdc-header-cell {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-soft);
+  }
+
+  ::ng-deep .mat-mdc-row {
+    transition: background-color 120ms ease;
+
+    &:hover {
+      background-color: var(--brass-soft);
+    }
+
+    &:focus-within {
+      background-color: var(--brass-soft);
+    }
+  }
+
+  ::ng-deep .mat-mdc-cell {
+    color: var(--ink);
+    border-bottom-color: var(--rule);
+  }
+}
+
+// Índice de razão: número de linha discreto, em mono, como a numeração
+// de um livro contábil.
+.col-index {
+  font-family: var(--font-mono);
+  color: var(--brass-dark);
+  font-weight: 500;
+  width: 2.5rem;
+  padding-right: 0 !important;
+}
+
+.col-name {
+  font-weight: 500;
+}
+
+.col-email {
+  color: var(--ink-soft);
+}
+
+// Dados numéricos (salário, admissão) recebem o mono — coerente com o
+// índice de linha, reforçando que são "campos de registro".
+.col-data {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.col-actions {
+  width: 1px;
+  white-space: nowrap;
+  text-align: right;
+}
+
+.action-danger {
+  ::ng-deep .mat-icon {
+    color: var(--danger);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .employee-table ::ng-deep .mat-mdc-row {
+    transition: none;
+  }
 }

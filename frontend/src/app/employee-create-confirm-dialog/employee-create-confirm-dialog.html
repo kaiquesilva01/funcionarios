@@ -1,0 +1,27 @@
+<h2 mat-dialog-title>Confirmar cadastro</h2>
+
+<mat-dialog-content class="confirm-content">
+  <p>Revise os dados antes de criar o funcionário:</p>
+
+  <dl class="confirm-list">
+    <dt>Nome</dt>
+    <dd>{{ payload.name }}</dd>
+
+    <dt>E-mail</dt>
+    <dd>{{ payload.email }}</dd>
+
+    <dt>Cargo</dt>
+    <dd>{{ payload.role }}</dd>
+
+    <dt>Salário</dt>
+    <dd>{{ payload.salary | currency: 'BRL' }}</dd>
+
+    <dt>Admissão</dt>
+    <dd>{{ payload.hireDate | date: 'dd/MM/yyyy' }}</dd>
+  </dl>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button type="button" (click)="onCancel()">Cancelar</button>
+  <button mat-flat-button type="button" color="primary" (click)="onConfirm()">Confirmar</button>
+</mat-dialog-actions>

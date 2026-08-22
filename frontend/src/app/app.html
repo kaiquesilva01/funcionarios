@@ -1,8 +1,14 @@
 <main class="page-shell">
   <header class="hero">
-    <p class="eyebrow">Funcionários</p>
-    <h1>Gerencie funcionários com Angular Material e Spring Boot</h1>
-    <p class="hero-copy">Crie, edite e remova funcionários. A tabela abaixo é alimentada pela API funcionarios-api.</p>
+    <div class="hero-text">
+      <p class="eyebrow">Livro-razão de pessoal</p>
+      <h1>Gerencie funcionários no livro-razão de pessoal</h1>
+      <p class="hero-copy">Crie, edite e remova registros. Cada linha do livro é sincronizada com a API funcionarios-api.</p>
+    </div>
+    <div class="hero-tally" aria-hidden="true">
+      <span class="hero-tally-value">{{ employees().length.toString().padStart(2, '0') }}</span>
+      <span class="hero-tally-label">registros<br />ativos</span>
+    </div>
   </header>
 
   <section class="content-grid">
@@ -20,18 +26,34 @@
       </mat-card-header>
 
       <mat-card-content>
+        <mat-form-field class="role-filter" appearance="outline">
+          <mat-label>Buscar por cargo</mat-label>
+          <input
+            matInput
+            type="text"
+            [value]="roleFilter()"
+            (input)="onRoleFilterChange($any($event.target).value)"
+            placeholder="Ex.: Desenvolvedor"
+          />
+          @if (roleFilter()) {
+            <button matSuffix mat-icon-button type="button" aria-label="Limpar filtro" (click)="onClearFilter()">
+              <mat-icon>close</mat-icon>
+            </button>
+          }
+        </mat-form-field>
+
         @if (loading()) {
           <div class="state-box">
             <mat-progress-spinner diameter="42" mode="indeterminate"></mat-progress-spinner>
             <p>Carregando funcionários...</p>
           </div>
-        } @else if (!employees().length) {
-          <div class="state-box empty-state">
-            <p>Nenhum funcionário cadastrado.</p>
-            <p>Adicione o primeiro funcionário usando o formulário ao lado.</p>
-          </div>
         } @else {
-          <app-employee-list [employees]="employees()" (edit)="onEdit($event)" (remove)="onRemove($event)" />
+          <app-employee-list
+            [employees]="employees()"
+            [emptyMessage]="emptyMessage()"
+            (edit)="onEdit($event)"
+            (remove)="onRemove($event)"
+          />
         }
       </mat-card-content>
     </mat-card>

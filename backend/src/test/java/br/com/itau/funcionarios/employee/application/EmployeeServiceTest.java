@@ -142,10 +142,53 @@ class EmployeeServiceTest {
 	}
 
 	@Test
-	void listsAllEmployees() {
+	void listsAllEmployeesWhenRoleFilterIsNull() {
 		List<Employee> employees = List.of(sampleEmployee(UUID.randomUUID()), sampleEmployee(UUID.randomUUID()));
 		when(employeeRepository.findAll()).thenReturn(employees);
 
-		assertThat(employeeService.listAll()).isEqualTo(employees);
+		assertThat(employeeService.list(null)).isEqualTo(employees);
+		verify(employeeRepository, never()).findByRoleContainingIgnoreCase(any());
+	}
+
+	@Test
+	void listsAllEmployeesWhenRoleFilterIsEmpty() {
+		List<Employee> employees = List.of(sampleEmployee(UUID.randomUUID()), sampleEmployee(UUID.randomUUID()));
+		when(employeeRepository.findAll()).thenReturn(employees);
+
+		assertThat(employeeService.list("")).isEqualTo(employees);
+		verify(employeeRepository, never()).findByRoleContainingIgnoreCase(any());
+	}
+
+	@Test
+	void listsAllEmployeesWhenRoleFilterIsBlank() {
+		List<Employee> employees = List.of(sampleEmployee(UUID.randomUUID()), sampleEmployee(UUID.randomUUID()));
+		when(employeeRepository.findAll()).thenReturn(employees);
+
+		assertThat(employeeService.list("   ")).isEqualTo(employees);
+		verify(employeeRepository, never()).findByRoleContainingIgnoreCase(any());
+	}
+
+	@Test
+	void listsEmployeesFilteredByRole() {
+		List<Employee> employees = List.of(sampleEmployee(UUID.randomUUID()));
+		when(employeeRepository.findByRoleContainingIgnoreCase("dev")).thenReturn(employees);
+
+		assertThat(employeeService.list("dev")).isEqualTo(employees);
+		verify(employeeRepository, never()).findAll();
+	}
+
+	@Test
+	void listsEmployeesTrimmingRoleFilter() {
+		List<Employee> employees = List.of(sampleEmployee(UUID.randomUUID()));
+		when(employeeRepository.findByRoleContainingIgnoreCase("dev")).thenReturn(employees);
+
+		assertThat(employeeService.list("  dev  ")).isEqualTo(employees);
+	}
+
+	@Test
+	void returnsEmptyListWhenNoEmployeeMatchesRoleFilter() {
+		when(employeeRepository.findByRoleContainingIgnoreCase("inexistente")).thenReturn(List.of());
+
+		assertThat(employeeService.list("inexistente")).isEmpty();
 	}
 }

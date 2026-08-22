@@ -13,6 +13,8 @@ public interface EmployeeRepository {
 
 	List<Employee> findAll();
 
+	List<Employee> findByRoleContainingIgnoreCase(String role);
+
 	boolean existsByEmailAndIdNot(String email, UUID id);
 
 	boolean existsByEmail(String email);

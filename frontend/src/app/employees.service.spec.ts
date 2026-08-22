@@ -42,6 +42,30 @@ describe('EmployeesService', () => {
     req.flush([sampleEmployee]);
   });
 
+  it('does not send a role param when no filter is given', () => {
+    service.list().subscribe();
+
+    const req = httpMock.expectOne((request) => request.url === baseUrl);
+    expect(req.request.params.has('role')).toBe(false);
+    req.flush([]);
+  });
+
+  it('does not send a role param when the filter is empty or blank', () => {
+    service.list('   ').subscribe();
+
+    const req = httpMock.expectOne((request) => request.url === baseUrl);
+    expect(req.request.params.has('role')).toBe(false);
+    req.flush([]);
+  });
+
+  it('sends a trimmed role param when a filter is given', () => {
+    service.list('  dev  ').subscribe();
+
+    const req = httpMock.expectOne((request) => request.url === baseUrl && request.params.get('role') === 'dev');
+    expect(req.request.params.get('role')).toBe('dev');
+    req.flush([]);
+  });
+
   it('creates an employee', () => {
     const payload: EmployeePayload = {
       name: sampleEmployee.name,

@@ -59,7 +59,10 @@ public class EmployeeService implements
 	}
 
 	@Override
-	public List<Employee> listAll() {
-		return employeeRepository.findAll();
+	public List<Employee> list(String roleFilter) {
+		String trimmed = roleFilter == null ? "" : roleFilter.trim();
+		return trimmed.isEmpty()
+				? employeeRepository.findAll()
+				: employeeRepository.findByRoleContainingIgnoreCase(trimmed);
 	}
 }

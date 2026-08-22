@@ -5,5 +5,5 @@ import java.util.List;
 
 public interface ListEmployeesUseCase {
 
-	List<Employee> listAll();
+	List<Employee> list(String roleFilter);
 }

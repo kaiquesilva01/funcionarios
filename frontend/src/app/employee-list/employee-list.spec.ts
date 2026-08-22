@@ -49,4 +49,25 @@ describe('EmployeeList', () => {
     expect(editedEmployee).toEqual(employees[0]);
     expect(removedEmployee).toEqual(employees[0]);
   });
+
+  it('renders the empty message when there are no employees', () => {
+    const fixture = TestBed.createComponent(EmployeeList);
+    fixture.componentRef.setInput('employees', []);
+    fixture.componentRef.setInput('emptyMessage', 'Nenhum funcionário encontrado para o cargo pesquisado.');
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.querySelector('table')).toBeNull();
+    expect(compiled.textContent).toContain('Nenhum funcionário encontrado para o cargo pesquisado.');
+  });
+
+  it('does not render the empty message when there are employees', () => {
+    const fixture = TestBed.createComponent(EmployeeList);
+    fixture.componentRef.setInput('employees', employees);
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.querySelector('table')).not.toBeNull();
+    expect(compiled.querySelector('.empty-state')).toBeNull();
+  });
 });

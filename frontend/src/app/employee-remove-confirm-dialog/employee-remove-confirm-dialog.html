@@ -1,0 +1,10 @@
+<h2 mat-dialog-title>Remover funcionário</h2>
+
+<mat-dialog-content>
+  <p>Tem certeza que deseja remover o funcionário <strong>{{ employee.name }}</strong>?</p>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button type="button" (click)="onCancel()">Cancelar</button>
+  <button mat-flat-button type="button" color="warn" (click)="onConfirm()">Remover</button>
+</mat-dialog-actions>

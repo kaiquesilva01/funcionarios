@@ -1,4 +1,4 @@
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { catchError, Observable, throwError } from 'rxjs';
 import { environment } from '../environments/environment';
@@ -9,8 +9,13 @@ export class EmployeesService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = `${environment.apiUrl}/employees`;
 
-  list(): Observable<Employee[]> {
-    return this.http.get<Employee[]>(this.baseUrl).pipe(catchError(this.handleError));
+  list(role?: string): Observable<Employee[]> {
+    let params = new HttpParams();
+    const trimmed = role?.trim();
+    if (trimmed) {
+      params = params.set('role', trimmed);
+    }
+    return this.http.get<Employee[]>(this.baseUrl, { params }).pipe(catchError(this.handleError));
   }
 
   create(payload: EmployeePayload): Observable<Employee> {

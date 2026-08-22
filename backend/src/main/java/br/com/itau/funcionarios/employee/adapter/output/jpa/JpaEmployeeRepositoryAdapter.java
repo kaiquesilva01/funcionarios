@@ -36,6 +36,13 @@ class JpaEmployeeRepositoryAdapter implements EmployeeRepository {
 	}
 
 	@Override
+	public List<Employee> findByRoleContainingIgnoreCase(String role) {
+		return springDataEmployeeRepository.findByRoleContainingIgnoreCase(role).stream()
+				.map(EmployeeMapper::toDomain)
+				.toList();
+	}
+
+	@Override
 	public boolean existsByEmailAndIdNot(String email, UUID id) {
 		return springDataEmployeeRepository.existsByEmailAndIdNot(email, id);
 	}

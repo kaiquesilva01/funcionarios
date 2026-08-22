@@ -57,4 +57,18 @@ class JpaEmployeeRepositoryAdapterTest {
 
 		assertThat(repositoryAdapter.existsById(saved.id())).isFalse();
 	}
+
+	@Test
+	void findsEmployeesByRoleContainingIgnoreCase() {
+		repositoryAdapter.save(new Employee(null, "Maria Silva", "maria.silva@itau.com.br", "Dev Backend",
+				new BigDecimal("5000.00"), LocalDate.of(2024, 1, 15)));
+		repositoryAdapter.save(new Employee(null, "João Souza", "joao.souza@itau.com.br", "DEV Senior",
+				new BigDecimal("9000.00"), LocalDate.of(2023, 5, 10)));
+		repositoryAdapter.save(new Employee(null, "Ana Costa", "ana.costa@itau.com.br", "Analista",
+				new BigDecimal("6000.00"), LocalDate.of(2022, 3, 1)));
+
+		assertThat(repositoryAdapter.findByRoleContainingIgnoreCase("dev")).hasSize(2)
+				.extracting(Employee::role)
+				.containsExactlyInAnyOrder("Dev Backend", "DEV Senior");
+	}
 }

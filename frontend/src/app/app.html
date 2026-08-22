@@ -26,18 +26,34 @@
       </mat-card-header>
 
       <mat-card-content>
+        <mat-form-field class="role-filter" appearance="outline">
+          <mat-label>Buscar por cargo</mat-label>
+          <input
+            matInput
+            type="text"
+            [value]="roleFilter()"
+            (input)="onRoleFilterChange($any($event.target).value)"
+            placeholder="Ex.: Desenvolvedor"
+          />
+          @if (roleFilter()) {
+            <button matSuffix mat-icon-button type="button" aria-label="Limpar filtro" (click)="onClearFilter()">
+              <mat-icon>close</mat-icon>
+            </button>
+          }
+        </mat-form-field>
+
         @if (loading()) {
           <div class="state-box">
             <mat-progress-spinner diameter="42" mode="indeterminate"></mat-progress-spinner>
             <p>Carregando funcionários...</p>
           </div>
-        } @else if (!employees().length) {
-          <div class="state-box empty-state">
-            <p>Nenhum funcionário cadastrado.</p>
-            <p>Adicione o primeiro funcionário usando o formulário ao lado.</p>
-          </div>
         } @else {
-          <app-employee-list [employees]="employees()" (edit)="onEdit($event)" (remove)="onRemove($event)" />
+          <app-employee-list
+            [employees]="employees()"
+            [emptyMessage]="emptyMessage()"
+            (edit)="onEdit($event)"
+            (remove)="onRemove($event)"
+          />
         }
       </mat-card-content>
     </mat-card>

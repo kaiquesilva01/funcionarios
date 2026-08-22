@@ -14,6 +14,7 @@ import { Employee } from '../employee.model';
 })
 export class EmployeeList {
   readonly employees = input.required<Employee[]>();
+  readonly emptyMessage = input('Nenhum funcionário cadastrado.');
 
   readonly edit = output<Employee>();
   readonly remove = output<Employee>();

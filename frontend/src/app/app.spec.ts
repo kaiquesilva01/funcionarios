@@ -29,8 +29,9 @@ describe('App', () => {
 
   beforeEach(async () => {
     employeesServiceStub = {
-      list: () => of([]),
+      list: vi.fn().mockReturnValue(of([])),
       create: vi.fn().mockReturnValue(of(undefined)),
+      update: vi.fn().mockReturnValue(of(undefined)),
       remove: vi.fn().mockReturnValue(of(undefined)),
     };
 
@@ -105,5 +106,73 @@ describe('App', () => {
     );
 
     expect(employeesServiceStub.remove).toHaveBeenCalledWith(EXISTING_EMPLOYEE.id);
+  });
+
+  it('filters employees after a debounce when typing in the role filter', () => {
+    vi.useFakeTimers();
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+    (employeesServiceStub.list as ReturnType<typeof vi.fn>).mockClear();
+
+    (fixture.componentInstance as unknown as { onRoleFilterChange(value: string): void }).onRoleFilterChange('dev');
+
+    expect(employeesServiceStub.list).not.toHaveBeenCalled();
+
+    vi.advanceTimersByTime(300);
+
+    expect(employeesServiceStub.list).toHaveBeenCalledWith('dev');
+    vi.useRealTimers();
+  });
+
+  it('clears the filter and reloads immediately without waiting for the debounce', () => {
+    vi.useFakeTimers();
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+    const component = fixture.componentInstance as unknown as {
+      onRoleFilterChange(value: string): void;
+      onClearFilter(): void;
+    };
+    component.onRoleFilterChange('dev');
+    vi.advanceTimersByTime(300);
+    (employeesServiceStub.list as ReturnType<typeof vi.fn>).mockClear();
+
+    component.onClearFilter();
+
+    expect(employeesServiceStub.list).toHaveBeenCalledWith('');
+    vi.useRealTimers();
+  });
+
+  it('keeps the active role filter when reloading after creating an employee', () => {
+    const fixture = TestBed.createComponent(App);
+    const dialog = TestBed.inject(MatDialog);
+    vi.spyOn(dialog, 'open').mockReturnValue({ afterClosed: () => of(true) } as ReturnType<MatDialog['open']>);
+    fixture.detectChanges();
+    const component = fixture.componentInstance as unknown as {
+      roleFilter: { set(value: string): void };
+      onSave(payload: EmployeePayload): void;
+    };
+    component.roleFilter.set('dev');
+    (employeesServiceStub.list as ReturnType<typeof vi.fn>).mockClear();
+
+    component.onSave(NEW_EMPLOYEE_PAYLOAD);
+
+    expect(employeesServiceStub.list).toHaveBeenCalledWith('dev');
+  });
+
+  it('keeps the active role filter when reloading after removing an employee', () => {
+    const fixture = TestBed.createComponent(App);
+    const dialog = TestBed.inject(MatDialog);
+    vi.spyOn(dialog, 'open').mockReturnValue({ afterClosed: () => of(true) } as ReturnType<MatDialog['open']>);
+    fixture.detectChanges();
+    const component = fixture.componentInstance as unknown as {
+      roleFilter: { set(value: string): void };
+      onRemove(employee: Employee): void;
+    };
+    component.roleFilter.set('dev');
+    (employeesServiceStub.list as ReturnType<typeof vi.fn>).mockClear();
+
+    component.onRemove(EXISTING_EMPLOYEE);
+
+    expect(employeesServiceStub.list).toHaveBeenCalledWith('dev');
   });
 });

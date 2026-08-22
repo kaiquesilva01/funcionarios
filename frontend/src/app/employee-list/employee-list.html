@@ -1,3 +1,4 @@
+@if (employees().length > 0) {
 <table mat-table [dataSource]="employees()" class="employee-table">
   <ng-container matColumnDef="index">
     <th mat-header-cell *matHeaderCellDef class="col-index">Nº</th>
@@ -52,3 +53,8 @@
   <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
   <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
 </table>
+} @else {
+<div class="empty-state">
+  <p>{{ emptyMessage() }}</p>
+</div>
+}

@@ -60,11 +60,30 @@ class EmployeeControllerTest {
 
 	@Test
 	void listsEmployees() throws Exception {
-		when(listEmployeesUseCase.listAll()).thenReturn(List.of(sampleEmployee(UUID.randomUUID())));
+		when(listEmployeesUseCase.list(null)).thenReturn(List.of(sampleEmployee(UUID.randomUUID())));
 
 		mockMvc.perform(get("/api/employees"))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$", hasSize(1)));
+	}
+
+	@Test
+	void listsEmployeesFilteredByRole() throws Exception {
+		when(listEmployeesUseCase.list("dev")).thenReturn(List.of(sampleEmployee(UUID.randomUUID())));
+
+		mockMvc.perform(get("/api/employees").param("role", "dev"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$", hasSize(1)));
+	}
+
+	@Test
+	void listsAllEmployeesWhenRoleParamIsEmpty() throws Exception {
+		when(listEmployeesUseCase.list("")).thenReturn(List.of(sampleEmployee(UUID.randomUUID()),
+				sampleEmployee(UUID.randomUUID())));
+
+		mockMvc.perform(get("/api/employees").param("role", ""))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$", hasSize(2)));
 	}
 
 	@Test

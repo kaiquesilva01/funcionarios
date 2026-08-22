@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ -n \"$(git status --porcelain 2>/dev/null)\" ]; then echo '{\"decision\":\"block\",\"reason\":\"Ha alteracoes de codigo nao commitadas. Siga a skill commit-com-testes (.claude/skills/commit-com-testes/SKILL.md): identifique o que mudou, rode os testes relevantes (backend e/ou frontend) e, se passarem, commite agora seguindo o padrao de commit do projeto, sem perguntar ao usuario. Se os testes falharem, pare e explique a falha em vez de commitar.\"}'; fi",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  }
+}

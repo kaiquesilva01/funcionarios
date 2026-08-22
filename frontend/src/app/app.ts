@@ -1,8 +1,11 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatCardModule } from '@angular/material/card';
+import { MatDialog } from '@angular/material/dialog';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { EmployeeCreateConfirmDialog } from './employee-create-confirm-dialog/employee-create-confirm-dialog';
+import { EmployeeRemoveConfirmDialog } from './employee-remove-confirm-dialog/employee-remove-confirm-dialog';
 import { EmployeeForm } from './employee-form/employee-form';
 import { EmployeeList } from './employee-list/employee-list';
 import { Employee, EmployeePayload } from './employee.model';
@@ -22,6 +25,7 @@ export class App implements OnInit {
   private readonly employeesService = inject(EmployeesService);
   private readonly snackBar = inject(MatSnackBar);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly dialog = inject(MatDialog);
 
   protected readonly employees = signal<Employee[]>([]);
   protected readonly loading = signal(true);
@@ -38,6 +42,24 @@ export class App implements OnInit {
 
   protected onSave(payload: EmployeePayload): void {
     const editingId = this.editingEmployeeId();
+
+    if (editingId) {
+      this.persist(editingId, payload);
+      return;
+    }
+
+    this.dialog
+      .open(EmployeeCreateConfirmDialog, { data: payload })
+      .afterClosed()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((confirmed) => {
+        if (confirmed) {
+          this.persist(null, payload);
+        }
+      });
+  }
+
+  private persist(editingId: string | null, payload: EmployeePayload): void {
     this.saving.set(true);
 
     const request = editingId
@@ -69,11 +91,18 @@ export class App implements OnInit {
   }
 
   protected onRemove(employee: Employee): void {
-    const confirmed = window.confirm(`Remover o funcionário "${employee.name}"?`);
-    if (!confirmed) {
-      return;
-    }
+    this.dialog
+      .open(EmployeeRemoveConfirmDialog, { data: employee })
+      .afterClosed()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((confirmed) => {
+        if (confirmed) {
+          this.removeEmployee(employee);
+        }
+      });
+  }
 
+  private removeEmployee(employee: Employee): void {
     this.employeesService
       .remove(employee.id)
       .pipe(takeUntilDestroyed(this.destroyRef))

@@ -70,4 +70,49 @@ describe('EmployeeList', () => {
     expect(compiled.querySelector('table')).not.toBeNull();
     expect(compiled.querySelector('.empty-state')).toBeNull();
   });
+
+  it('renders the paginator with the total element count', () => {
+    const fixture = TestBed.createComponent(EmployeeList);
+    fixture.componentRef.setInput('employees', employees);
+    fixture.componentRef.setInput('totalElements', 42);
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.querySelector('mat-paginator')).not.toBeNull();
+    expect(compiled.textContent).toContain('42');
+  });
+
+  it('emits pageChange when the paginator changes page', () => {
+    const fixture = TestBed.createComponent(EmployeeList);
+    fixture.componentRef.setInput('employees', employees);
+    fixture.componentRef.setInput('totalElements', 30);
+    fixture.componentRef.setInput('pageSize', 10);
+    fixture.detectChanges();
+
+    let emitted: { pageIndex: number } | undefined;
+    fixture.componentInstance.pageChange.subscribe((event) => (emitted = event));
+
+    const paginatorDebugEl = fixture.debugElement.query((de) => de.name === 'mat-paginator');
+    paginatorDebugEl.componentInstance.page.emit({ pageIndex: 2, pageSize: 10, length: 30 });
+
+    expect(emitted).toEqual({ pageIndex: 2, pageSize: 10, length: 30 });
+  });
+
+  it('emits sortChange when a sortable column header is clicked', () => {
+    const fixture = TestBed.createComponent(EmployeeList);
+    fixture.componentRef.setInput('employees', employees);
+    fixture.detectChanges();
+
+    let emitted: { active: string; direction: string } | undefined;
+    fixture.componentInstance.sortChange.subscribe((event) => (emitted = event));
+
+    const nameHeader = (fixture.nativeElement as HTMLElement).querySelector(
+      '.mat-sort-header-container',
+    ) as HTMLElement;
+    nameHeader.click();
+    fixture.detectChanges();
+
+    expect(emitted).toBeDefined();
+    expect(emitted?.active).toBe('name');
+  });
 });

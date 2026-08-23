@@ -4,8 +4,10 @@ import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { of } from 'rxjs';
 import { vi } from 'vitest';
 import { App } from './app';
-import { Employee, EmployeePayload } from './employee.model';
+import { Employee, EmployeePayload, PagedResponse } from './employee.model';
 import { EmployeesService } from './employees.service';
+
+const EMPTY_PAGE: PagedResponse<Employee> = { content: [], page: 0, size: 10, totalElements: 0, totalPages: 0 };
 
 const NEW_EMPLOYEE_PAYLOAD: EmployeePayload = {
   name: 'Maria Silva',
@@ -29,7 +31,7 @@ describe('App', () => {
 
   beforeEach(async () => {
     employeesServiceStub = {
-      list: vi.fn().mockReturnValue(of([])),
+      list: vi.fn().mockReturnValue(of(EMPTY_PAGE)),
       create: vi.fn().mockReturnValue(of(undefined)),
       update: vi.fn().mockReturnValue(of(undefined)),
       remove: vi.fn().mockReturnValue(of(undefined)),
@@ -120,7 +122,23 @@ describe('App', () => {
 
     vi.advanceTimersByTime(300);
 
-    expect(employeesServiceStub.list).toHaveBeenCalledWith('dev');
+    expect(employeesServiceStub.list).toHaveBeenCalledWith(expect.objectContaining({ role: 'dev', page: 0 }));
+    vi.useRealTimers();
+  });
+
+  it('filters employees after a debounce when typing in the search field', () => {
+    vi.useFakeTimers();
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+    (employeesServiceStub.list as ReturnType<typeof vi.fn>).mockClear();
+
+    (fixture.componentInstance as unknown as { onSearchChange(value: string): void }).onSearchChange('maria');
+
+    expect(employeesServiceStub.list).not.toHaveBeenCalled();
+
+    vi.advanceTimersByTime(300);
+
+    expect(employeesServiceStub.list).toHaveBeenCalledWith(expect.objectContaining({ search: 'maria', page: 0 }));
     vi.useRealTimers();
   });
 
@@ -138,8 +156,39 @@ describe('App', () => {
 
     component.onClearFilter();
 
-    expect(employeesServiceStub.list).toHaveBeenCalledWith('');
+    expect(employeesServiceStub.list).toHaveBeenCalledWith(expect.objectContaining({ role: '', page: 0 }));
     vi.useRealTimers();
+  });
+
+  it('reorders and resets to the first page when a column sort changes', () => {
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+    (employeesServiceStub.list as ReturnType<typeof vi.fn>).mockClear();
+    const component = fixture.componentInstance as unknown as {
+      onPageChange(event: { pageIndex: number; pageSize: number; length: number }): void;
+      onSortChange(sort: { active: string; direction: 'asc' | 'desc' | '' }): void;
+    };
+
+    component.onPageChange({ pageIndex: 2, pageSize: 10, length: 30 });
+    (employeesServiceStub.list as ReturnType<typeof vi.fn>).mockClear();
+    component.onSortChange({ active: 'salary', direction: 'desc' });
+
+    expect(employeesServiceStub.list).toHaveBeenCalledWith(
+      expect.objectContaining({ sort: 'salary,desc', page: 0 }),
+    );
+  });
+
+  it('requests the selected page and size when the paginator changes', () => {
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+    (employeesServiceStub.list as ReturnType<typeof vi.fn>).mockClear();
+    const component = fixture.componentInstance as unknown as {
+      onPageChange(event: { pageIndex: number; pageSize: number; length: number }): void;
+    };
+
+    component.onPageChange({ pageIndex: 1, pageSize: 25, length: 30 });
+
+    expect(employeesServiceStub.list).toHaveBeenCalledWith(expect.objectContaining({ page: 1, size: 25 }));
   });
 
   it('keeps the active role filter when reloading after creating an employee', () => {
@@ -156,7 +205,7 @@ describe('App', () => {
 
     component.onSave(NEW_EMPLOYEE_PAYLOAD);
 
-    expect(employeesServiceStub.list).toHaveBeenCalledWith('dev');
+    expect(employeesServiceStub.list).toHaveBeenCalledWith(expect.objectContaining({ role: 'dev' }));
   });
 
   it('keeps the active role filter when reloading after removing an employee', () => {
@@ -173,6 +222,6 @@ describe('App', () => {
 
     component.onRemove(EXISTING_EMPLOYEE);
 
-    expect(employeesServiceStub.list).toHaveBeenCalledWith('dev');
+    expect(employeesServiceStub.list).toHaveBeenCalledWith(expect.objectContaining({ role: 'dev' }));
   });
 });

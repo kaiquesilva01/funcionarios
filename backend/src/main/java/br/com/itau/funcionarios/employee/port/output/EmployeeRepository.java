@@ -1,9 +1,10 @@
 package br.com.itau.funcionarios.employee.port.output;
 
 import br.com.itau.funcionarios.employee.domain.model.Employee;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface EmployeeRepository {
 
@@ -11,9 +12,7 @@ public interface EmployeeRepository {
 
 	Optional<Employee> findById(UUID id);
 
-	List<Employee> findAll();
-
-	List<Employee> findByRoleContainingIgnoreCase(String role);
+	Page<Employee> search(String roleFilter, String search, Pageable pageable);
 
 	boolean existsByEmailAndIdNot(String email, UUID id);
 

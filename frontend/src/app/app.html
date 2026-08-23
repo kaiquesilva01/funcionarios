@@ -6,7 +6,7 @@
       <p class="hero-copy">Crie, edite e remova registros. Cada linha do livro é sincronizada com a API funcionarios-api.</p>
     </div>
     <div class="hero-tally" aria-hidden="true">
-      <span class="hero-tally-value">{{ employees().length.toString().padStart(2, '0') }}</span>
+      <span class="hero-tally-value">{{ totalElements().toString().padStart(2, '0') }}</span>
       <span class="hero-tally-label">registros<br />ativos</span>
     </div>
   </header>
@@ -22,25 +22,38 @@
     <mat-card class="employees-panel">
       <mat-card-header>
         <mat-card-title>Funcionários cadastrados</mat-card-title>
-        <mat-card-subtitle>{{ employees().length }} funcionário(s)</mat-card-subtitle>
+        <mat-card-subtitle>{{ totalElements() }} funcionário(s)</mat-card-subtitle>
       </mat-card-header>
 
       <mat-card-content>
-        <mat-form-field class="role-filter" appearance="outline">
-          <mat-label>Buscar por cargo</mat-label>
-          <input
-            matInput
-            type="text"
-            [value]="roleFilter()"
-            (input)="onRoleFilterChange($any($event.target).value)"
-            placeholder="Ex.: Desenvolvedor"
-          />
-          @if (roleFilter()) {
-            <button matSuffix mat-icon-button type="button" aria-label="Limpar filtro" (click)="onClearFilter()">
-              <mat-icon>close</mat-icon>
-            </button>
-          }
-        </mat-form-field>
+        <div class="filters-row">
+          <mat-form-field class="role-filter" appearance="outline">
+            <mat-label>Buscar por cargo</mat-label>
+            <input
+              matInput
+              type="text"
+              [value]="roleFilter()"
+              (input)="onRoleFilterChange($any($event.target).value)"
+              placeholder="Ex.: Desenvolvedor"
+            />
+            @if (roleFilter()) {
+              <button matSuffix mat-icon-button type="button" aria-label="Limpar filtro" (click)="onClearFilter()">
+                <mat-icon>close</mat-icon>
+              </button>
+            }
+          </mat-form-field>
+
+          <mat-form-field class="search-filter" appearance="outline">
+            <mat-label>Buscar por nome ou e-mail</mat-label>
+            <input
+              matInput
+              type="text"
+              [value]="search()"
+              (input)="onSearchChange($any($event.target).value)"
+              placeholder="Ex.: Maria Silva"
+            />
+          </mat-form-field>
+        </div>
 
         @if (loading()) {
           <div class="state-box">
@@ -51,8 +64,15 @@
           <app-employee-list
             [employees]="employees()"
             [emptyMessage]="emptyMessage()"
+            [totalElements]="totalElements()"
+            [pageIndex]="page()"
+            [pageSize]="pageSize()"
+            [sortField]="sortField()"
+            [sortDirection]="sortDirection()"
             (edit)="onEdit($event)"
             (remove)="onRemove($event)"
+            (sortChange)="onSortChange($event)"
+            (pageChange)="onPageChange($event)"
           />
         }
       </mat-card-content>

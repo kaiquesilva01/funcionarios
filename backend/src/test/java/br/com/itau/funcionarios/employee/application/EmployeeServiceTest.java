@@ -3,6 +3,7 @@ package br.com.itau.funcionarios.employee.application;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -21,6 +22,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 @ExtendWith(MockitoExtension.class)
 class EmployeeServiceTest {
@@ -142,53 +147,25 @@ class EmployeeServiceTest {
 	}
 
 	@Test
-	void listsAllEmployeesWhenRoleFilterIsNull() {
-		List<Employee> employees = List.of(sampleEmployee(UUID.randomUUID()), sampleEmployee(UUID.randomUUID()));
-		when(employeeRepository.findAll()).thenReturn(employees);
+	void listsEmployeesDelegatingToRepositoryWithNormalizedFilters() {
+		Pageable pageable = PageRequest.of(0, 10);
+		Page<Employee> page = new PageImpl<>(List.of(sampleEmployee(UUID.randomUUID())));
+		when(employeeRepository.search("dev", "maria", pageable)).thenReturn(page);
 
-		assertThat(employeeService.list(null)).isEqualTo(employees);
-		verify(employeeRepository, never()).findByRoleContainingIgnoreCase(any());
+		Page<Employee> result = employeeService.list("  dev  ", "  maria  ", pageable);
+
+		assertThat(result).isEqualTo(page);
+		verify(employeeRepository).search("dev", "maria", pageable);
 	}
 
 	@Test
-	void listsAllEmployeesWhenRoleFilterIsEmpty() {
-		List<Employee> employees = List.of(sampleEmployee(UUID.randomUUID()), sampleEmployee(UUID.randomUUID()));
-		when(employeeRepository.findAll()).thenReturn(employees);
+	void normalizesNullFiltersToEmptyString() {
+		Pageable pageable = PageRequest.of(0, 10);
+		Page<Employee> page = new PageImpl<>(List.of());
+		when(employeeRepository.search(eq(""), eq(""), any())).thenReturn(page);
 
-		assertThat(employeeService.list("")).isEqualTo(employees);
-		verify(employeeRepository, never()).findByRoleContainingIgnoreCase(any());
-	}
+		employeeService.list(null, null, pageable);
 
-	@Test
-	void listsAllEmployeesWhenRoleFilterIsBlank() {
-		List<Employee> employees = List.of(sampleEmployee(UUID.randomUUID()), sampleEmployee(UUID.randomUUID()));
-		when(employeeRepository.findAll()).thenReturn(employees);
-
-		assertThat(employeeService.list("   ")).isEqualTo(employees);
-		verify(employeeRepository, never()).findByRoleContainingIgnoreCase(any());
-	}
-
-	@Test
-	void listsEmployeesFilteredByRole() {
-		List<Employee> employees = List.of(sampleEmployee(UUID.randomUUID()));
-		when(employeeRepository.findByRoleContainingIgnoreCase("dev")).thenReturn(employees);
-
-		assertThat(employeeService.list("dev")).isEqualTo(employees);
-		verify(employeeRepository, never()).findAll();
-	}
-
-	@Test
-	void listsEmployeesTrimmingRoleFilter() {
-		List<Employee> employees = List.of(sampleEmployee(UUID.randomUUID()));
-		when(employeeRepository.findByRoleContainingIgnoreCase("dev")).thenReturn(employees);
-
-		assertThat(employeeService.list("  dev  ")).isEqualTo(employees);
-	}
-
-	@Test
-	void returnsEmptyListWhenNoEmployeeMatchesRoleFilter() {
-		when(employeeRepository.findByRoleContainingIgnoreCase("inexistente")).thenReturn(List.of());
-
-		assertThat(employeeService.list("inexistente")).isEmpty();
+		verify(employeeRepository).search("", "", pageable);
 	}
 }

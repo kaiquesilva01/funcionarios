@@ -9,8 +9,9 @@ import br.com.itau.funcionarios.employee.port.input.GetEmployeeUseCase;
 import br.com.itau.funcionarios.employee.port.input.ListEmployeesUseCase;
 import br.com.itau.funcionarios.employee.port.input.UpdateEmployeeUseCase;
 import br.com.itau.funcionarios.employee.port.output.EmployeeRepository;
-import java.util.List;
 import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -59,10 +60,9 @@ public class EmployeeService implements
 	}
 
 	@Override
-	public List<Employee> list(String roleFilter) {
-		String trimmed = roleFilter == null ? "" : roleFilter.trim();
-		return trimmed.isEmpty()
-				? employeeRepository.findAll()
-				: employeeRepository.findByRoleContainingIgnoreCase(trimmed);
+	public Page<Employee> list(String roleFilter, String search, Pageable pageable) {
+		String trimmedRole = roleFilter == null ? "" : roleFilter.trim();
+		String trimmedSearch = search == null ? "" : search.trim();
+		return employeeRepository.search(trimmedRole, trimmedSearch, pageable);
 	}
 }

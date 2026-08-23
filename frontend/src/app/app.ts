@@ -7,6 +7,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { Sort } from '@angular/material/sort';
+import { PageEvent } from '@angular/material/paginator';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { EmployeeCreateConfirmDialog } from './employee-create-confirm-dialog/employee-create-confirm-dialog';
 import { EmployeeRemoveConfirmDialog } from './employee-remove-confirm-dialog/employee-remove-confirm-dialog';
@@ -17,7 +19,8 @@ import { EmployeesService } from './employees.service';
 
 const SNACKBAR_DURATION_MS = 2500;
 const SNACKBAR_ERROR_DURATION_MS = 3500;
-const ROLE_FILTER_DEBOUNCE_MS = 300;
+const FILTER_DEBOUNCE_MS = 300;
+const DEFAULT_PAGE_SIZE = 10;
 
 @Component({
   selector: 'app-root',
@@ -41,27 +44,33 @@ export class App implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly dialog = inject(MatDialog);
 
-  private readonly roleFilterChanges = new Subject<string>();
+  private readonly filterChanges = new Subject<void>();
 
   protected readonly employees = signal<Employee[]>([]);
+  protected readonly totalElements = signal(0);
   protected readonly loading = signal(true);
   protected readonly saving = signal(false);
   protected readonly editingEmployeeId = signal<string | null>(null);
   protected readonly roleFilter = signal('');
+  protected readonly search = signal('');
+  protected readonly page = signal(0);
+  protected readonly pageSize = signal(DEFAULT_PAGE_SIZE);
+  protected readonly sortField = signal('name');
+  protected readonly sortDirection = signal<'asc' | 'desc'>('asc');
 
   protected readonly editingEmployee = computed(
     () => this.employees().find((employee) => employee.id === this.editingEmployeeId()) ?? null,
   );
 
   protected readonly emptyMessage = computed(() =>
-    this.roleFilter().trim()
-      ? 'Nenhum funcionário encontrado para o cargo pesquisado.'
+    this.roleFilter().trim() || this.search().trim()
+      ? 'Nenhum funcionário encontrado para os filtros pesquisados.'
       : 'Nenhum funcionário cadastrado.',
   );
 
   ngOnInit(): void {
-    this.roleFilterChanges
-      .pipe(debounceTime(ROLE_FILTER_DEBOUNCE_MS), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
+    this.filterChanges
+      .pipe(debounceTime(FILTER_DEBOUNCE_MS), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.loadEmployees());
 
     this.loadEmployees();
@@ -69,11 +78,32 @@ export class App implements OnInit {
 
   protected onRoleFilterChange(value: string): void {
     this.roleFilter.set(value);
-    this.roleFilterChanges.next(value);
+    this.page.set(0);
+    this.filterChanges.next();
+  }
+
+  protected onSearchChange(value: string): void {
+    this.search.set(value);
+    this.page.set(0);
+    this.filterChanges.next();
   }
 
   protected onClearFilter(): void {
     this.roleFilter.set('');
+    this.page.set(0);
+    this.loadEmployees();
+  }
+
+  protected onSortChange(sort: Sort): void {
+    this.sortField.set(sort.direction ? sort.active : 'name');
+    this.sortDirection.set(sort.direction === 'desc' ? 'desc' : 'asc');
+    this.page.set(0);
+    this.loadEmployees();
+  }
+
+  protected onPageChange(event: PageEvent): void {
+    this.page.set(event.pageIndex);
+    this.pageSize.set(event.pageSize);
     this.loadEmployees();
   }
 
@@ -160,11 +190,18 @@ export class App implements OnInit {
   private loadEmployees(): void {
     this.loading.set(true);
     this.employeesService
-      .list(this.roleFilter())
+      .list({
+        role: this.roleFilter(),
+        search: this.search(),
+        page: this.page(),
+        size: this.pageSize(),
+        sort: `${this.sortField()},${this.sortDirection()}`,
+      })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (employees) => {
-          this.employees.set(employees);
+        next: (result) => {
+          this.employees.set(result.content);
+          this.totalElements.set(result.totalElements);
           this.loading.set(false);
         },
         error: () => {

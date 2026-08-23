@@ -95,7 +95,7 @@ export class App implements OnInit {
   }
 
   protected onSortChange(sort: Sort): void {
-    this.sortField.set(sort.direction ? sort.active : 'name');
+    this.sortField.set(sort.active);
     this.sortDirection.set(sort.direction === 'desc' ? 'desc' : 'asc');
     this.page.set(0);
     this.loadEmployees();

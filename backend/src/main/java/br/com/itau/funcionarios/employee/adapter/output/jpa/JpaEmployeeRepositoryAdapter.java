@@ -31,7 +31,13 @@ class JpaEmployeeRepositoryAdapter implements EmployeeRepository {
 
 	@Override
 	public Page<Employee> search(String roleFilter, String search, Pageable pageable) {
-		return springDataEmployeeRepository.search(roleFilter, search, pageable).map(EmployeeMapper::toDomain);
+		return springDataEmployeeRepository
+				.search(escapeLike(roleFilter), escapeLike(search), pageable)
+				.map(EmployeeMapper::toDomain);
+	}
+
+	private static String escapeLike(String value) {
+		return value.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
 	}
 
 	@Override

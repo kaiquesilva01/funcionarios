@@ -15,9 +15,9 @@ interface SpringDataEmployeeRepository extends JpaRepository<EmployeeEntity, UUI
 
 	@Query("""
 			SELECT e FROM EmployeeEntity e
-			WHERE (:role = '' OR LOWER(e.role) LIKE LOWER(CONCAT('%', :role, '%')))
-			AND (:search = '' OR LOWER(e.name) LIKE LOWER(CONCAT('%', :search, '%'))
-				OR LOWER(e.email) LIKE LOWER(CONCAT('%', :search, '%')))
+			WHERE (:role = '' OR LOWER(e.role) LIKE LOWER(CONCAT('%', :role, '%')) ESCAPE '\\')
+			AND (:search = '' OR LOWER(e.name) LIKE LOWER(CONCAT('%', :search, '%')) ESCAPE '\\'
+				OR LOWER(e.email) LIKE LOWER(CONCAT('%', :search, '%')) ESCAPE '\\')
 			""")
 	Page<EmployeeEntity> search(@Param("role") String role, @Param("search") String search, Pageable pageable);
 }

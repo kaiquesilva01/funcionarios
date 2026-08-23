@@ -121,4 +121,16 @@ class JpaEmployeeRepositoryAdapterTest {
 		assertThat(secondPage.getContent()).extracting(Employee::name).containsExactly("Carlos Lima");
 		assertThat(firstPage.getTotalPages()).isEqualTo(2);
 	}
+
+	@Test
+	void treatsPercentAndUnderscoreInSearchAsLiteralCharacters() {
+		repositoryAdapter.save(new Employee(null, "100% Dev", "cem.por.cento@itau.com.br", "Analista",
+				new BigDecimal("5000.00"), LocalDate.of(2024, 1, 15)));
+		repositoryAdapter.save(new Employee(null, "Maria Silva", "maria.silva@itau.com.br", "Analista",
+				new BigDecimal("5000.00"), LocalDate.of(2024, 1, 15)));
+
+		Page<Employee> result = repositoryAdapter.search("", "100%", PageRequest.of(0, 10));
+
+		assertThat(result.getContent()).extracting(Employee::name).containsExactly("100% Dev");
+	}
 }

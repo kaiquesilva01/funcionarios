@@ -22,7 +22,7 @@ Aplica os apontamentos de revisão de um PR do GitHub de ponta a ponta: lê os c
    - Se um apontamento for ambíguo ou parecer tecnicamente questionável, pergunte ao usuário antes de implementar — não aplique cegamente.
 
 4. **Testar antes de commitar**
-   - Rode os testes das partes tocadas (`cd backend && ./gradlew test`, `cd frontend && npx ng test --watch=false`). Não pule esta etapa mesmo para mudanças pequenas.
+   - Rode os testes das partes tocadas (`cd backend && ./mvnw test`, `cd frontend && npx ng test --watch=false`). Não pule esta etapa mesmo para mudanças pequenas.
 
 5. **Commitar e subir**
    - Um commit por apontamento relacionado (ou agrupados coerentemente), mensagens em Conventional Commits/português seguindo `git log --oneline` do projeto.

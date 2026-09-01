@@ -14,7 +14,7 @@ Faz commit de todas as modificações pendentes, mas **nunca antes de rodar os t
    - Identifique se as mudanças tocam `backend/`, `frontend/`, ou ambos.
 
 2. **Rodar os testes correspondentes ANTES de qualquer commit**
-   - Se houve alteração em `backend/`: rode os testes do backend (ex.: `cd backend && ./gradlew test` ou `mvn test`, conforme o build tool atual do projeto — verifique se existe `pom.xml` ou `build.gradle`).
+   - Se houve alteração em `backend/`: rode os testes do backend com `cd backend && ./mvnw test` (Maven — o projeto usa `pom.xml`/`mvnw`, não Gradle).
    - Se houve alteração em `frontend/`: rode os testes do frontend (ex.: `cd frontend && npx ng test --watch=false` ou `npm test`, conforme o `package.json`).
    - Se a alteração for só em documentação/config sem código testável (ex.: `.md`, `docker-compose.yml`), pode pular a etapa de teste automatizado, mas diga isso explicitamente ao usuário antes de commitar.
    - **Se algum teste falhar**: pare, reporte a falha ao usuário e não prossiga para o commit até que esteja tudo passando (a menos que o usuário peça explicitamente para commitar mesmo assim).

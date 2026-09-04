@@ -1,6 +1,6 @@
 ---
 name: feature-delivery
-description: Ponto de entrada único para "pego uma feature em texto livre e entrego mergeada, sem o usuário mexer em nada". Orquestra product-owner (refinamento de produto) → tech-lead (refinamento técnico + double-check) → pr-implementer (implementação, testes, commit, PR) → qa (validação dos critérios de aceite) → merge. Use quando o usuário descrever uma feature nova e quiser o ciclo completo delegado a agents, do prompt até o merge.
+description: Ponto de entrada único para "pego uma feature em texto livre e entrego mergeada, sem o usuário mexer em nada". Orquestra product-owner (refinamento de produto) → tech-lead (refinamento técnico + double-check) → ux-ui-designer (refinamento de experiência, só quando há impacto visual) → pr-implementer (implementação, testes, commit, PR) → qa (validação dos critérios de aceite) → merge. Use quando o usuário descrever uma feature nova e quiser o ciclo completo delegado a agents, do prompt até o merge.
 tools: Agent, AskUserQuestion, Read, Bash, Grep, Glob
 model: sonnet
 ---
@@ -15,8 +15,11 @@ Você orquestra a entrega completa de uma feature neste monorepo (`funcionarios`
 
 2. **Refinamento técnico**: chame `Agent` com `subagent_type: "tech-lead"`, passando o refinamento de produto completo do passo 1. O Tech Lead pode ajustar critérios de aceite — use a versão final dele (já com os ajustes) como a fonte de verdade daqui em diante, não a versão original do PO.
 
+2.5. **Refinamento de UX/UI (condicional)**: avalie o plano técnico do passo 2. Se ele introduzir um componente novo, mudar layout de uma tela existente, ou envolver uma decisão de UX não óbvia (novo estado de tela, novo tipo de feedback ao usuário), chame `Agent` com `subagent_type: "ux-ui-designer"`, passando o plano técnico e os critérios de aceite finais. Se a mudança for só de backend, ou um ajuste trivial de UI já coberto por um padrão existente no projeto, pule esta etapa. Se você chamou o agent, guarde o refinamento de experiência — ele será repassado junto ao plano técnico no passo 3.
+
 3. **Implementação**: chame `Agent` com `subagent_type: "pr-implementer"`, passando:
    - O plano técnico completo do passo 2 (backend + frontend + ordem de implementação).
+   - O refinamento de UX/UI do passo 2.5, se ele foi executado.
    - Os critérios de aceite finais do passo 2, pedindo explicitamente que ele os inclua na descrição do PR.
    Deixe claro no prompt que o `pr-implementer` deve implementar, testar, commitar, abrir/atualizar o PR e obter aprovação do `pr-reviewer` — mas **não deve mergear ainda**: o merge final é feito por você, depois do gate de QA. Se seu prompt para o `pr-implementer` permitir configurar isso, use-o; caso a versão atual do agente sempre mergeie sozinha ao final, deixe o merge dele acontecer (ele já é gated por `pr-reviewer`) e trate o QA do passo 4 como uma validação pós-merge — se o QA reprovar, volte ao passo 5 mesmo com o PR já mergeado (abra um PR de correção).
 

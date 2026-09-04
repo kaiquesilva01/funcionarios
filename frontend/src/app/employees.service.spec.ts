@@ -2,7 +2,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { environment } from '../environments/environment';
-import { Employee, EmployeePayload } from './employee.model';
+import { Employee, EmployeeListParams, EmployeePayload, PagedResponse } from './employee.model';
 import { EmployeesService } from './employees.service';
 
 describe('EmployeesService', () => {
@@ -19,6 +19,16 @@ describe('EmployeesService', () => {
     hireDate: '2024-01-15',
   };
 
+  const samplePage: PagedResponse<Employee> = {
+    content: [sampleEmployee],
+    page: 0,
+    size: 10,
+    totalElements: 1,
+    totalPages: 1,
+  };
+
+  const defaultParams: EmployeeListParams = { page: 0, size: 10, sort: 'name,asc' };
+
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [provideHttpClient(), provideHttpClientTesting()],
@@ -33,13 +43,56 @@ describe('EmployeesService', () => {
   });
 
   it('lists employees', () => {
-    service.list().subscribe((employees) => {
-      expect(employees).toEqual([sampleEmployee]);
+    service.list(defaultParams).subscribe((result) => {
+      expect(result).toEqual(samplePage);
     });
 
-    const req = httpMock.expectOne(baseUrl);
+    const req = httpMock.expectOne((request) => request.url === baseUrl);
     expect(req.request.method).toBe('GET');
-    req.flush([sampleEmployee]);
+    req.flush(samplePage);
+  });
+
+  it('sends page, size and sort params', () => {
+    service.list(defaultParams).subscribe();
+
+    const req = httpMock.expectOne((request) => request.url === baseUrl);
+    expect(req.request.params.get('page')).toBe('0');
+    expect(req.request.params.get('size')).toBe('10');
+    expect(req.request.params.get('sort')).toBe('name,asc');
+    req.flush(samplePage);
+  });
+
+  it('does not send a role or search param when no filter is given', () => {
+    service.list(defaultParams).subscribe();
+
+    const req = httpMock.expectOne((request) => request.url === baseUrl);
+    expect(req.request.params.has('role')).toBe(false);
+    expect(req.request.params.has('search')).toBe(false);
+    req.flush(samplePage);
+  });
+
+  it('does not send a role param when the filter is empty or blank', () => {
+    service.list({ ...defaultParams, role: '   ' }).subscribe();
+
+    const req = httpMock.expectOne((request) => request.url === baseUrl);
+    expect(req.request.params.has('role')).toBe(false);
+    req.flush(samplePage);
+  });
+
+  it('sends a trimmed role param when a filter is given', () => {
+    service.list({ ...defaultParams, role: '  dev  ' }).subscribe();
+
+    const req = httpMock.expectOne((request) => request.url === baseUrl && request.params.get('role') === 'dev');
+    expect(req.request.params.get('role')).toBe('dev');
+    req.flush(samplePage);
+  });
+
+  it('sends a trimmed search param when given', () => {
+    service.list({ ...defaultParams, search: '  maria  ' }).subscribe();
+
+    const req = httpMock.expectOne((request) => request.url === baseUrl && request.params.get('search') === 'maria');
+    expect(req.request.params.get('search')).toBe('maria');
+    req.flush(samplePage);
   });
 
   it('creates an employee', () => {
@@ -82,11 +135,11 @@ describe('EmployeesService', () => {
   it('maps server error message on failure', () => {
     let capturedError: Error | undefined;
 
-    service.list().subscribe({
+    service.list(defaultParams).subscribe({
       error: (error: Error) => (capturedError = error),
     });
 
-    const req = httpMock.expectOne(baseUrl);
+    const req = httpMock.expectOne((request) => request.url === baseUrl);
     req.flush({ message: 'Falha ao listar' }, { status: 500, statusText: 'Server Error' });
 
     expect(capturedError?.message).toBe('Falha ao listar');

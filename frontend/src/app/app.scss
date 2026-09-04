@@ -1,7 +1,7 @@
 .page-shell {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem 1.5rem 4rem;
+  padding: 2.5rem 1.5rem 4rem;
   display: flex;
   flex-direction: column;
   gap: 2rem;
@@ -9,21 +9,68 @@
 
 .hero {
   display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 3px double var(--ledger-line);
+}
+
+.hero-text {
+  display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  max-width: 640px;
 }
 
 .eyebrow {
+  font-family: var(--font-mono);
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.14em;
   font-size: 0.75rem;
-  color: var(--app-muted, #64748b);
+  font-weight: 500;
+  color: var(--brass-dark);
+  margin: 0;
+}
+
+h1 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--ink);
   margin: 0;
 }
 
 .hero-copy {
   margin: 0;
-  color: var(--app-muted, #64748b);
+  color: var(--ink-soft);
+}
+
+.hero-tally {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 0.5rem 1.25rem;
+}
+
+.hero-tally-value {
+  font-family: var(--font-mono);
+  font-size: 2.5rem;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--brass-dark);
+}
+
+.hero-tally-label {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-soft);
+  margin-top: 0.35rem;
+  line-height: 1.3;
 }
 
 .content-grid {
@@ -35,6 +82,25 @@
 
 .employees-panel {
   min-height: 200px;
+  border-top: 3px solid var(--brass);
+}
+
+.filters-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.role-filter,
+.search-filter {
+  width: 100%;
+}
+
+@media (max-width: 640px) {
+  .filters-row {
+    grid-template-columns: 1fr;
+  }
 }
 
 .state-box {
@@ -43,11 +109,30 @@
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  padding: 2rem 0;
+  padding: 3rem 1rem;
   text-align: center;
+  color: var(--ink-soft);
+}
+
+.empty-state p:first-of-type {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--ink);
 }
 
 @media (max-width: 900px) {
+  .hero {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .hero-tally {
+    align-self: flex-start;
+    flex-direction: row;
+    gap: 0.75rem;
+  }
+
   .content-grid {
     grid-template-columns: 1fr;
   }

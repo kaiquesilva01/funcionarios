@@ -1,9 +1,10 @@
 package br.com.itau.funcionarios.employee.port.input;
 
 import br.com.itau.funcionarios.employee.domain.model.Employee;
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface ListEmployeesUseCase {
 
-	List<Employee> listAll();
+	Page<Employee> list(String roleFilter, String search, Pageable pageable);
 }

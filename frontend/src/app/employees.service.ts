@@ -1,16 +1,30 @@
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { catchError, Observable, throwError } from 'rxjs';
 import { environment } from '../environments/environment';
-import { Employee, EmployeePayload } from './employee.model';
+import { Employee, EmployeeListParams, EmployeePayload, PagedResponse } from './employee.model';
 
 @Injectable({ providedIn: 'root' })
 export class EmployeesService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = `${environment.apiUrl}/employees`;
 
-  list(): Observable<Employee[]> {
-    return this.http.get<Employee[]>(this.baseUrl).pipe(catchError(this.handleError));
+  list(params: EmployeeListParams): Observable<PagedResponse<Employee>> {
+    let httpParams = new HttpParams().set('page', params.page).set('size', params.size).set('sort', params.sort);
+
+    const role = params.role?.trim();
+    if (role) {
+      httpParams = httpParams.set('role', role);
+    }
+
+    const search = params.search?.trim();
+    if (search) {
+      httpParams = httpParams.set('search', search);
+    }
+
+    return this.http
+      .get<PagedResponse<Employee>>(this.baseUrl, { params: httpParams })
+      .pipe(catchError(this.handleError));
   }
 
   create(payload: EmployeePayload): Observable<Employee> {

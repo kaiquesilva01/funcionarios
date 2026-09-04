@@ -2,9 +2,10 @@ package br.com.itau.funcionarios.employee.adapter.output.jpa;
 
 import br.com.itau.funcionarios.employee.domain.model.Employee;
 import br.com.itau.funcionarios.employee.port.output.EmployeeRepository;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -29,10 +30,14 @@ class JpaEmployeeRepositoryAdapter implements EmployeeRepository {
 	}
 
 	@Override
-	public List<Employee> findAll() {
-		return springDataEmployeeRepository.findAll().stream()
-				.map(EmployeeMapper::toDomain)
-				.toList();
+	public Page<Employee> search(String roleFilter, String search, Pageable pageable) {
+		return springDataEmployeeRepository
+				.search(escapeLike(roleFilter), escapeLike(search), pageable)
+				.map(EmployeeMapper::toDomain);
+	}
+
+	private static String escapeLike(String value) {
+		return value.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
 	}
 
 	@Override

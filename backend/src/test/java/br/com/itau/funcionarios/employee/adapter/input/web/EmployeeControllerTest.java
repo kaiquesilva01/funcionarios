@@ -28,6 +28,11 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -60,11 +65,76 @@ class EmployeeControllerTest {
 
 	@Test
 	void listsEmployees() throws Exception {
-		when(listEmployeesUseCase.listAll()).thenReturn(List.of(sampleEmployee(UUID.randomUUID())));
+		when(listEmployeesUseCase.list(eq(null), eq(null), any()))
+				.thenReturn(new PageImpl<>(List.of(sampleEmployee(UUID.randomUUID()))));
 
 		mockMvc.perform(get("/api/employees"))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$", hasSize(1)));
+				.andExpect(jsonPath("$.content", hasSize(1)));
+	}
+
+	@Test
+	void listsEmployeesFilteredByRole() throws Exception {
+		when(listEmployeesUseCase.list(eq("dev"), eq(null), any()))
+				.thenReturn(new PageImpl<>(List.of(sampleEmployee(UUID.randomUUID()))));
+
+		mockMvc.perform(get("/api/employees").param("role", "dev"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.content", hasSize(1)));
+	}
+
+	@Test
+	void listsEmployeesFilteredBySearch() throws Exception {
+		when(listEmployeesUseCase.list(eq(null), eq("maria"), any()))
+				.thenReturn(new PageImpl<>(List.of(sampleEmployee(UUID.randomUUID()))));
+
+		mockMvc.perform(get("/api/employees").param("search", "maria"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.content", hasSize(1)));
+	}
+
+	@Test
+	void listsAllEmployeesWhenRoleParamIsEmpty() throws Exception {
+		when(listEmployeesUseCase.list(eq(""), eq(null), any())).thenReturn(new PageImpl<>(
+				List.of(sampleEmployee(UUID.randomUUID()), sampleEmployee(UUID.randomUUID()))));
+
+		mockMvc.perform(get("/api/employees").param("role", ""))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.content", hasSize(2)));
+	}
+
+	@Test
+	void appliesPageAndSizeParams() throws Exception {
+		Page<Employee> page = new PageImpl<>(List.of(sampleEmployee(UUID.randomUUID())),
+				PageRequest.of(1, 5, Sort.by("name").ascending()), 11);
+		when(listEmployeesUseCase.list(eq(null), eq(null), any())).thenReturn(page);
+
+		mockMvc.perform(get("/api/employees").param("page", "1").param("size", "5"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.page").value(1))
+				.andExpect(jsonPath("$.size").value(5))
+				.andExpect(jsonPath("$.totalElements").value(11))
+				.andExpect(jsonPath("$.totalPages").value(3));
+	}
+
+	@Test
+	void appliesSortParam() throws Exception {
+		when(listEmployeesUseCase.list(eq(null), eq(null), any())).thenReturn(new PageImpl<>(List.of()));
+
+		mockMvc.perform(get("/api/employees").param("sort", "salary,desc"))
+				.andExpect(status().isOk());
+
+		var pageableCaptor = org.mockito.ArgumentCaptor.forClass(Pageable.class);
+		verify(listEmployeesUseCase).list(eq(null), eq(null), pageableCaptor.capture());
+		Sort.Order order = pageableCaptor.getValue().getSort().getOrderFor("salary");
+		org.assertj.core.api.Assertions.assertThat(order).isNotNull();
+		org.assertj.core.api.Assertions.assertThat(order.getDirection()).isEqualTo(Sort.Direction.DESC);
+	}
+
+	@Test
+	void rejectsInvalidSortProperty() throws Exception {
+		mockMvc.perform(get("/api/employees").param("sort", "unknownField,asc"))
+				.andExpect(status().isBadRequest());
 	}
 
 	@Test

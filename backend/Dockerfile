@@ -1,18 +1,16 @@
 # syntax=docker/dockerfile:1
 
-FROM eclipse-temurin:21-jdk AS base
+FROM maven:3.9-eclipse-temurin-21 AS base
 WORKDIR /workspace
-COPY gradlew build.gradle settings.gradle ./
-COPY gradle gradle
-RUN chmod +x gradlew
+COPY pom.xml ./
 COPY src src
 
 FROM base AS test
-RUN --mount=type=cache,target=/root/.gradle ./gradlew check --no-daemon
+RUN --mount=type=cache,target=/root/.m2 mvn -B verify
 
 FROM base AS builder
-RUN --mount=type=cache,target=/root/.gradle ./gradlew bootJar --no-daemon \
-    && cp $(ls build/libs/*.jar | grep -v plain) /workspace/app.jar
+RUN --mount=type=cache,target=/root/.m2 mvn -B package -DskipTests \
+    && cp target/funcionarios-api.jar /workspace/app.jar
 
 FROM eclipse-temurin:21-jre AS runtime
 WORKDIR /app

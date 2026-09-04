@@ -18,10 +18,15 @@ funcionarios/
 ## Estado atual no GitHub
 
 - Repo: **https://github.com/kaiquesilva01/funcionarios** (público)
-- PR aberto: **https://github.com/kaiquesilva01/funcionarios/pull/1** — `feat/employee-crud` → `main`
-- `main` só tem o commit `chore: initial commit` (base vazia, de propósito, para o PR mostrar o diff completo)
-- `feat/employee-crud` tem 3 commits de feature: backend, frontend, docker/docs (ver `git log --oneline feat/employee-crud`)
-- **Próximo passo esperado**: o usuário vai revisar o PR #1 (ou pedir revisão) e trazer apontamentos de melhoria para o site. Para ver comentários do PR: `gh pr view 1 --comments` ou `gh api repos/kaiquesilva01/funcionarios/pulls/1/comments` (revisões inline).
+- `main` é a branch estável — todo o trabalho até aqui (CRUD, migração Maven, dialogs de confirmação, identidade visual "Registro", filtro/paginação/busca/ordenação, agents) já está mergeado nela.
+- `develop` existe a partir de `main` e é a base para novas features.
+
+### Estratégia de branches
+
+- **`main`**: estável, sempre com o que já foi revisado e testado. Nunca commitar direto nela.
+- **`develop`**: ponto de partida para novas features. Crie a branch da feature a partir de `develop` (`git checkout develop && git checkout -b feat/xxx`).
+- Feature branches abrem PR contra `main` (o fluxo dos agents — `feature-delivery`/`pr-implementer` — já faz isso). Depois de mergear em `main`, sincronize `develop` com `main` (`git checkout develop && git merge main && git push`) antes de começar a próxima feature.
+- Cuidado com **PRs encadeados** (uma branch de feature aberta em cima de outra branch de feature, não de `main`/`develop`): isso já aconteceu neste projeto (PRs #2 e #3 foram mergeados em branches intermediárias e nunca chegaram a `main` até serem resgatados pelo PR #4) e é fácil de não perceber olhando só o `gh pr list`. Sempre confira `baseRefName` do PR (`gh pr view <n> --json baseRefName`) antes de assumir que "MERGED" significa "está em main".
 
 ### Observação sobre repositório extra
 
@@ -84,11 +89,9 @@ docker compose down   # para derrubar
 
 **Sem Docker:**
 ```bash
-cd backend && ./gradlew bootRun     # sobe em :8080
+cd backend && ./mvnw spring-boot:run   # sobe em :8080 (Maven, não Gradle — ver seção de armadilhas)
 cd frontend && npm install && npm start   # sobe em :4200
 ```
-
-Ao fim desta sessão os containers estavam **rodando** (`docker compose ps` mostrava `backend` e `frontend` up). Rode `docker compose ps` no início da próxima sessão para conferir o estado antes de assumir que precisa subir de novo.
 
 ## Decisões e armadilhas descobertas nesta sessão (não repetir a investigação)
 
@@ -102,12 +105,17 @@ Ao fim desta sessão os containers estavam **rodando** (`docker compose ps` most
 - **Token do Git Credential Manager (usado para `git push`) não tinha escopo `delete_repo`** — foi preciso instalar o `gh` CLI via `winget install --id GitHub.cli` e autenticar via device flow (`gh auth login --scopes "repo,delete_repo" --web`) para apagar o repo `funcionarios-web` criado por engano.
 - **Budget de bundle do Angular** ajustado para `700kB`/`1MB` (igual ao `core-plataforma-cursos`) porque o padrão do CLI (`500kB`) estoura com Material incluído.
 
+## Squad de agents
+
+Este projeto tem um pipeline de agents em `.claude/agents/` para entregar features de ponta a ponta:
+
+`product-owner` (refinamento de negócio) → `tech-lead` (refinamento técnico) → `ux-ui-designer` (refinamento de UX/UI, só quando há impacto visual) → `pr-implementer` (implementa, testa, commita, abre PR, mergeia) → `qa` (valida critérios de aceite).
+
+Use o agent `feature-delivery` como ponto de entrada único para rodar esse ciclo completo a partir de um pedido em texto livre — ele faz uma etapa de esclarecimento com o usuário antes de acionar o `product-owner`, se houver ambiguidade real.
+
 ## Próximos passos
 
-O usuário vai trazer **apontamentos de revisão do PR #1** para melhorar a tela (frontend) e possivelmente o backend. Ao retomar:
-
-1. Ler os comentários do PR (`gh pr view 1 --comments` ou pela UI do GitHub).
-2. Fazer as alterações pedidas em `feat/employee-crud` (branch já existe local e remotamente).
-3. Rodar os testes de novo antes de commitar: `cd backend && ./gradlew test` e `cd frontend && npx ng test --watch=false`.
-4. Se fizer sentido testar visualmente, usar o fluxo Docker acima.
-5. Commitar e dar `git push` (branch já tem upstream configurado — basta `git push`).
+1. Novas features nascem de `develop` (branch da feature a partir dela, não de `main` direto).
+2. Rodar os testes antes de commitar: `cd backend && ./mvnw test` e `cd frontend && npx ng test --watch=false`.
+3. Se fizer sentido testar visualmente, usar o fluxo Docker acima.
+4. Depois do PR mergeado em `main`, sincronizar `develop` com `main`.

@@ -9,6 +9,8 @@ Você é responsável pelo ciclo completo de uma mudança neste monorepo (`funci
 
 ## Fluxo obrigatório, nesta ordem
 
+0. **Branch**: se ainda não estiver numa branch de feature dedicada, crie uma a partir de `develop` atualizada (`git checkout develop && git pull origin develop && git checkout -b <tipo>/<nome-da-feature>`) — nunca a partir de `main` diretamente.
+
 1. **Implementar**: faça a mudança pedida. Siga os padrões do repo (arquitetura hexagonal no backend, standalone components + signals no frontend — ver CLAUDE.md).
 
 2. **Testar**: rode os testes relevantes ao que mudou:
@@ -23,7 +25,7 @@ Você é responsável pelo ciclo completo de uma mudança neste monorepo (`funci
 5. **Delegar revisão**: use a ferramenta Agent com `subagent_type: "pr-reviewer"` para revisar o PR recém-criado/atualizado. Passe o número do PR ou branch no prompt. Esse agente é somente leitura — ele não vai alterar nada, só devolver um veredito.
 
 6. **Agir sobre o veredito**:
-   - Se `VEREDITO: APPROVED`: faça o merge com `gh pr merge <n> --squash --delete-branch` (ajuste a estratégia se o repo já tiver uma convenção diferente — confira PRs anteriores com `gh pr list --state merged` se tiver dúvida). Nunca use `--admin` para pular checks obrigatórios do GitHub.
+   - Se `VEREDITO: APPROVED`: faça o merge com `gh pr merge <n> --squash --delete-branch` (ajuste a estratégia se o repo já tiver uma convenção diferente — confira PRs anteriores com `gh pr list --state merged` se tiver dúvida, e confirme o `baseRefName` do PR com `gh pr view <n> --json baseRefName` antes de assumir que ele mira `main`). Nunca use `--admin` para pular checks obrigatórios do GitHub. Depois do merge em `main`, sincronize `develop`: `git checkout develop && git pull origin develop && git merge origin/main && git push`.
    - Se `VEREDITO: CHANGES_REQUESTED`: corrija os problemas apontados, volte ao passo 2 (testar) e repita o ciclo. Limite-se a **no máximo 3 rodadas** de correção — se ainda não aprovar depois disso, pare e reporte ao usuário o que está travando, sem forçar o merge.
 
 ## Guardrails que nunca podem ser quebrados

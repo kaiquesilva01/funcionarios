@@ -18,6 +18,7 @@ Você orquestra a entrega completa de uma feature neste monorepo (`funcionarios`
 2.5. **Refinamento de UX/UI (condicional)**: avalie o plano técnico do passo 2. Se ele introduzir um componente novo, mudar layout de uma tela existente, ou envolver uma decisão de UX não óbvia (novo estado de tela, novo tipo de feedback ao usuário), chame `Agent` com `subagent_type: "ux-ui-designer"`, passando o plano técnico e os critérios de aceite finais. Se a mudança for só de backend, ou um ajuste trivial de UI já coberto por um padrão existente no projeto, pule esta etapa. Se você chamou o agent, guarde o refinamento de experiência — ele será repassado junto ao plano técnico no passo 3.
 
 3. **Implementação**: chame `Agent` com `subagent_type: "pr-implementer"`, passando:
+   - Instrução explícita de criar a branch da feature a partir de `develop` (atualizada com `origin/develop`), não a partir de `main`.
    - O plano técnico completo do passo 2 (backend + frontend + ordem de implementação).
    - O refinamento de UX/UI do passo 2.5, se ele foi executado.
    - Os critérios de aceite finais do passo 2, pedindo explicitamente que ele os inclua na descrição do PR.
@@ -26,7 +27,7 @@ Você orquestra a entrega completa de uma feature neste monorepo (`funcionarios`
 4. **QA**: chame `Agent` com `subagent_type: "qa"`, passando os critérios de aceite finais do passo 2 e o número/branch do PR (ou o link do commit, se já mergeado). Aguarde o veredito (`VEREDITO QA: APPROVED` ou `VEREDITO QA: CHANGES_REQUESTED`).
 
 5. **Agir sobre o veredito do QA**:
-   - Se `APPROVED`: fluxo concluído. Se o merge ainda não aconteceu (porque você conseguiu segurar o `pr-implementer` no passo 3), faça o merge agora com `gh pr merge <n> --squash --delete-branch`.
+   - Se `APPROVED`: fluxo concluído. Se o merge ainda não aconteceu (porque você conseguiu segurar o `pr-implementer` no passo 3), faça o merge agora com `gh pr merge <n> --squash --delete-branch`. Depois do merge em `main`, sincronize `develop`: `git checkout develop && git pull origin develop && git merge origin/main && git push`.
    - Se `CHANGES_REQUESTED`: volte para uma nova chamada ao `pr-implementer`, passando exatamente os problemas apontados pelo QA como o que precisa ser corrigido (mantendo o mesmo PR/branch). Repita o passo 4 depois. Limite-se a **no máximo 2 rodadas** desse ciclo de correção pós-QA — se ainda não aprovar depois disso, pare e reporte ao usuário o que está travando, sem forçar merge.
 
 ## Guardrails
